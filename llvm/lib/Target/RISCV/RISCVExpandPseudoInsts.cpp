@@ -43,6 +43,8 @@ private:
   bool expandMBB(MachineBasicBlock &MBB);
   bool expandMI(MachineBasicBlock &MBB, MachineBasicBlock::iterator MBBI,
                 MachineBasicBlock::iterator &NextMBBI);
+  bool expandGpRelAddress(MachineBasicBlock &MBB,
+                          MachineBasicBlock::iterator MBBI);
   bool expandAuipcInstPair(MachineBasicBlock &MBB,
                            MachineBasicBlock::iterator MBBI,
                            MachineBasicBlock::iterator &NextMBBI,
@@ -154,6 +156,31 @@ bool RISCVExpandPseudo::expandMI(MachineBasicBlock &MBB,
   return false;
 }
 
+bool RISCVExpandPseudo::expandGpRelAddress(
+    MachineBasicBlock &MBB, MachineBasicBlock::iterator MBBI) {
+  MachineFunction *MF = MBB.getParent();
+  const auto &STI = MF->getSubtarget<RISCVSubtarget>();
+  unsigned LoadInstr = STI.is64Bit() ? RISCV::LD : RISCV::LW;
+  MachineInstr &MI = *MBBI;
+  DebugLoc DL = MI.getDebugLoc();
+
+  Register DestReg = MI.getOperand(0).getReg();
+  const MachineOperand &Symbol = MI.getOperand(1);
+
+  BuildMI(MBB, MBBI, DL, TII->get(RISCV::LUI), DestReg)
+      .addDisp(Symbol, 0, RISCVII::MO_GOT_GPREL_HI);
+  BuildMI(MBB, MBBI, DL, TII->get(RISCV::ADD), DestReg)
+      .addReg(RISCV::X3)
+      .addReg(DestReg);
+      //.addDisp(Symbol, 0, RISCVII::MO_GOT_GPREL);
+  BuildMI(MBB, MBBI, DL, TII->get(LoadInstr), DestReg)
+      .addReg(DestReg)
+      .addDisp(Symbol, 0, RISCVII::MO_GOT_GPREL_LO);
+
+  MI.eraseFromParent();
+  return true;
+}
+
 bool RISCVExpandPseudo::expandAuipcInstPair(
     MachineBasicBlock &MBB, MachineBasicBlock::iterator MBBI,
     MachineBasicBlock::iterator &NextMBBI, unsigned FlagsHi,
@@ -209,6 +236,9 @@ bool RISCVExpandPseudo::expandLoadAddress(
 
   unsigned SecondOpcode;
   unsigned FlagsHi;
+  bool IsEPIC = MF->getTarget().getRelocationModel() == Reloc::EPIC;
+  if (IsEPIC)
+    return expandGpRelAddress(MBB, MBBI);
   if (MF->getTarget().isPositionIndependent()) {
     const auto &STI = MF->getSubtarget<RISCVSubtarget>();
     SecondOpcode = STI.is64Bit() ? RISCV::LD : RISCV::LW;

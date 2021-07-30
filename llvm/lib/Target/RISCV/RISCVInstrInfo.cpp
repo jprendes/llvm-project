@@ -745,7 +745,7 @@ unsigned RISCVInstrInfo::getInstSizeInBytes(const MachineInstr &MI) const {
   case RISCV::PseudoJump:
   case RISCV::PseudoTAIL:
   case RISCV::PseudoLLA:
-  case RISCV::PseudoLA:
+  case RISCV::PseudoLA: // TODO: this might change
   case RISCV::PseudoLA_TLS_IE:
   case RISCV::PseudoLA_TLS_GD:
     return 8;
@@ -976,7 +976,9 @@ RISCVInstrInfo::getSerializableDirectMachineOperandTargetFlags() const {
       {MO_TPREL_HI, "riscv-tprel-hi"},
       {MO_TPREL_ADD, "riscv-tprel-add"},
       {MO_TLS_GOT_HI, "riscv-tls-got-hi"},
-      {MO_TLS_GD_HI, "riscv-tls-gd-hi"}};
+      {MO_TLS_GD_HI, "riscv-tls-gd-hi"},
+      {MO_GOT_GPREL_HI, "riscv-got-gprel-hi"},
+      {MO_GOT_GPREL_LO, "riscv-got-gprel-lo"}};
   return makeArrayRef(TargetFlags);
 }
 bool RISCVInstrInfo::isFunctionSafeToOutlineFrom(
