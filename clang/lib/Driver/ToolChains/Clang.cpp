@@ -1117,6 +1117,8 @@ static const char *RelocationModelName(llvm::Reloc::Model Model) {
     return "pic";
   case llvm::Reloc::DynamicNoPIC:
     return "dynamic-no-pic";
+  case llvm::Reloc::EPIC:
+    return "epic";
   case llvm::Reloc::ROPI:
     return "ropi";
   case llvm::Reloc::RWPI:
