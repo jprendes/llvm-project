@@ -257,6 +257,9 @@ RelExpr RISCV::getRelExpr(const RelType type, const Symbol &s,
     return R_PLT_PC;
   case R_RISCV_GOT_HI20:
     return R_GOT_PC;
+  case R_RISCV_GOT_GPREL_HI20:
+  case R_RISCV_GOT_GPREL_LO12_I:
+    return R_GOT;
   case R_RISCV_PCREL_LO12_I:
   case R_RISCV_PCREL_LO12_S:
     return R_RISCV_PC_INDIRECT;
@@ -391,6 +394,7 @@ void RISCV::relocate(uint8_t *loc, const Relocation &rel, uint64_t val) const {
   }
 
   case R_RISCV_GOT_HI20:
+  case R_RISCV_GOT_GPREL_HI20:
   case R_RISCV_PCREL_HI20:
   case R_RISCV_TLS_GD_HI20:
   case R_RISCV_TLS_GOT_HI20:
@@ -402,6 +406,7 @@ void RISCV::relocate(uint8_t *loc, const Relocation &rel, uint64_t val) const {
     return;
   }
 
+  case R_RISCV_GOT_GPREL_LO12_I:
   case R_RISCV_PCREL_LO12_I:
   case R_RISCV_TPREL_LO12_I:
   case R_RISCV_LO12_I: {
