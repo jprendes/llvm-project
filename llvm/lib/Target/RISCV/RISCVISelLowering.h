@@ -519,6 +519,9 @@ private:
                          bool IsRet, CallLoweringInfo *CLI,
                          RISCVCCAssignFn Fn) const;
 
+  bool isEPIC() const;
+  bool isLocalGlobalValue(const GlobalValue *GV) const;
+
   template <class NodeTy>
   SDValue getAddr(NodeTy *N, SelectionDAG &DAG, bool IsLocal = true) const;
 
