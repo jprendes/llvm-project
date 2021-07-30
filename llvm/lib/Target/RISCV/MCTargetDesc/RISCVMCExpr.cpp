@@ -115,6 +115,8 @@ RISCVMCExpr::VariantKind RISCVMCExpr::getVariantKindForName(StringRef name) {
       .Case("pcrel_lo", VK_RISCV_PCREL_LO)
       .Case("pcrel_hi", VK_RISCV_PCREL_HI)
       .Case("got_pcrel_hi", VK_RISCV_GOT_HI)
+      .Case("got_gprel_hi", VK_RISCV_GOT_GPREL_HI)
+      .Case("got_gprel_lo", VK_RISCV_GOT_GPREL_LO)
       .Case("tprel_lo", VK_RISCV_TPREL_LO)
       .Case("tprel_hi", VK_RISCV_TPREL_HI)
       .Case("tprel_add", VK_RISCV_TPREL_ADD)
@@ -138,6 +140,10 @@ StringRef RISCVMCExpr::getVariantKindName(VariantKind Kind) {
     return "pcrel_hi";
   case VK_RISCV_GOT_HI:
     return "got_pcrel_hi";
+  case VK_RISCV_GOT_GPREL_HI:
+    return "got_gprel_hi";
+  case VK_RISCV_GOT_GPREL_LO:
+    return "got_gprel_lo";
   case VK_RISCV_TPREL_LO:
     return "tprel_lo";
   case VK_RISCV_TPREL_HI:
@@ -204,7 +210,8 @@ bool RISCVMCExpr::evaluateAsConstant(int64_t &Res) const {
   MCValue Value;
 
   if (Kind == VK_RISCV_PCREL_HI || Kind == VK_RISCV_PCREL_LO ||
-      Kind == VK_RISCV_GOT_HI || Kind == VK_RISCV_TPREL_HI ||
+      Kind == VK_RISCV_GOT_HI || Kind == VK_RISCV_GOT_GPREL_HI ||
+      Kind == VK_RISCV_GOT_GPREL_LO || Kind == VK_RISCV_TPREL_HI ||
       Kind == VK_RISCV_TPREL_LO || Kind == VK_RISCV_TPREL_ADD ||
       Kind == VK_RISCV_TLS_GOT_HI || Kind == VK_RISCV_TLS_GD_HI ||
       Kind == VK_RISCV_CALL || Kind == VK_RISCV_CALL_PLT)

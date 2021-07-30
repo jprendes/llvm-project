@@ -32,7 +32,14 @@ enum Fixups {
   // 20-bit fixup corresponding to %got_pcrel_hi(foo) for instructions like
   // auipc
   fixup_riscv_got_hi20,
-  // 20-bit fixup corresponding to %tprel_hi(foo) for instructions like lui
+  // fixup_riscv_got_gprel_hi20 - 20-bit fixup corresponding to
+  // %got_gprel_hi(foo) for instructions like auipc
+  fixup_riscv_got_gprel_hi20,
+  // fixup_riscv_got_gprel_lo12_i - 12-bit fixup corresponding to
+  // %got_gprel_lo(foo) for instructions like addi
+  fixup_riscv_got_gprel_lo12_i,
+  // fixup_riscv_tprel_hi20 - 20-bit fixup corresponding to tprel_hi(foo) for
+  // instructions like lui
   fixup_riscv_tprel_hi20,
   // 12-bit fixup corresponding to %tprel_lo(foo) for instructions like addi
   fixup_riscv_tprel_lo12_i,
