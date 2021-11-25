@@ -42,6 +42,9 @@ public:
 class RISCVTargetAsmStreamer : public RISCVTargetStreamer {
   formatted_raw_ostream &OS;
 
+  void prettyPrintAsm(MCInstPrinter &InstPrinter, uint64_t Address,
+                      const MCInst &Inst, const MCSubtargetInfo &STI,
+                      raw_ostream &OS) override;
   void finishAttributeSection() override;
   void emitAttribute(unsigned Attribute, unsigned Value) override;
   void emitTextAttribute(unsigned Attribute, StringRef String) override;

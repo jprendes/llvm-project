@@ -306,6 +306,10 @@ namespace RISCVFeatures {
 // triple. Exits with report_fatal_error if not.
 void validate(const Triple &TT, const FeatureBitset &FeatureBits);
 
+constexpr int NumGuards = 2;
+
+bool hasGuard(const MCInst &MI);
+
 } // namespace RISCVFeatures
 
 namespace RISCVVType {

@@ -52,6 +52,10 @@ public:
                          SmallVectorImpl<MCFixup> &Fixups,
                          const MCSubtargetInfo &STI) const override;
 
+  void encodeInstructionImpl(const MCInst &MI, raw_ostream &OS,
+                             SmallVectorImpl<MCFixup> &Fixups,
+                             const MCSubtargetInfo &STI) const;
+
   void expandFunctionCall(const MCInst &MI, raw_ostream &OS,
                           SmallVectorImpl<MCFixup> &Fixups,
                           const MCSubtargetInfo &STI) const;
@@ -190,6 +194,22 @@ void RISCVMCCodeEmitter::expandAddTPRel(const MCInst &MI, raw_ostream &OS,
 void RISCVMCCodeEmitter::encodeInstruction(const MCInst &MI, raw_ostream &OS,
                                            SmallVectorImpl<MCFixup> &Fixups,
                                            const MCSubtargetInfo &STI) const {
+  encodeInstructionImpl(MI, OS, Fixups, STI);
+
+  if (!STI.hasFeature(RISCV::FeatureGuards) || !RISCVFeatures::hasGuard(MI))
+    return;
+
+  for (int i = 0; i < RISCVFeatures::NumGuards; ++i) {
+    MCInst GuardInst = MCInstBuilder(RISCV::UNIMP);
+    uint32_t Bits = getBinaryCodeForInstr(GuardInst, Fixups, STI);
+    support::endian::write(OS, Bits, support::little);
+    ++MCNumEmitted; // Keep track of the # of mi's emitted.
+  }
+}
+
+void RISCVMCCodeEmitter::encodeInstructionImpl(
+    const MCInst &MI, raw_ostream &OS, SmallVectorImpl<MCFixup> &Fixups,
+    const MCSubtargetInfo &STI) const {
   verifyInstructionPredicates(MI,
                               computeAvailableFeatures(STI.getFeatureBits()));
 

@@ -14,6 +14,7 @@
 #include "RISCVBaseInfo.h"
 #include "llvm/ADT/ArrayRef.h"
 #include "llvm/ADT/Triple.h"
+#include "llvm/MC/MCInst.h"
 #include "llvm/Support/raw_ostream.h"
 
 namespace llvm {
@@ -96,6 +97,34 @@ void validate(const Triple &TT, const FeatureBitset &FeatureBits) {
     report_fatal_error("RV32E can't be enabled for an RV64 target");
 }
 
+// Indicates if this is a control flow instruction that is protected by jump
+// guards (e.g. `unimp` instructions) when that option is enabled.
+bool hasGuard(const MCInst &MI) {
+  switch (MI.getOpcode()) {
+  default:
+    return false;
+  case RISCV::JALR: {
+    // Check for possible RET pseudo-instruction (PseudoRET) expansion.
+    MCRegister Rd = MI.getOperand(0).getReg();
+    MCRegister Rs = MI.getOperand(1).getReg();
+    return Rd == RISCV::X0 && Rs == RISCV::X1;
+  }
+  case RISCV::C_JR: {
+    // Check for possible RET pseudo-instruction (PseudoRET) expansion.
+    MCRegister Rs = MI.getOperand(0).getReg();
+    return Rs == RISCV::X1;
+  }
+  case RISCV::JAL: {
+    // Check for possible J pseudo-instruction/alias expansion.
+    MCRegister Rd = MI.getOperand(0).getReg();
+    return Rd == RISCV::X0;
+  }
+  case RISCV::C_J: // J pseudo-instruction/alias expansion.
+  case RISCV::PseudoTAIL:
+  case RISCV::PseudoJump:
+    return true;
+  }
+}
 } // namespace RISCVFeatures
 
 // Encode VTYPE into the binary format used by the the VSETVLI instruction which

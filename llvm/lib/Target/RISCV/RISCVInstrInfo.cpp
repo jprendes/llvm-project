@@ -674,7 +674,7 @@ unsigned RISCVInstrInfo::insertIndirectBranch(MachineBasicBlock &MBB,
   MRI.replaceRegWith(ScratchReg, Scav);
   MRI.clearVirtRegs();
   RS->setRegUsed(Scav);
-  return 8;
+  return getInstSizeInBytes(MI);
 }
 
 bool RISCVInstrInfo::reverseBranchCondition(
@@ -719,31 +719,57 @@ bool RISCVInstrInfo::isBranchOffsetInRange(unsigned BranchOp,
 unsigned RISCVInstrInfo::getInstSizeInBytes(const MachineInstr &MI) const {
   unsigned Opcode = MI.getOpcode();
 
+  assert(MI.getParent() && MI.getParent()->getParent() && "MI not in MF");
+  const auto MF = MI.getMF();
+  const auto &TM = static_cast<const RISCVTargetMachine &>(MF->getTarget());
+  const MCRegisterInfo &MRI = *TM.getMCRegisterInfo();
+  const MCSubtargetInfo &STI = *TM.getMCSubtargetInfo();
+  const RISCVSubtarget &ST = MF->getSubtarget<RISCVSubtarget>();
+  unsigned GuardSize = STI.getFeatureBits()[RISCV::FeatureGuards]
+                           ? (RISCVFeatures::NumGuards * 4)
+                           : 0;
+
   switch (Opcode) {
-  default: {
-    if (MI.getParent() && MI.getParent()->getParent()) {
-      const auto MF = MI.getMF();
-      const auto &TM = static_cast<const RISCVTargetMachine &>(MF->getTarget());
-      const MCRegisterInfo &MRI = *TM.getMCRegisterInfo();
-      const MCSubtargetInfo &STI = *TM.getMCSubtargetInfo();
-      const RISCVSubtarget &ST = MF->getSubtarget<RISCVSubtarget>();
-      if (isCompressibleInst(MI, &ST, MRI, STI))
-        return 2;
-    }
+  default:
+    if (isCompressibleInst(MI, &ST, MRI, STI))
+      return 2;
     return get(Opcode).getSize();
-  }
   case TargetOpcode::EH_LABEL:
   case TargetOpcode::IMPLICIT_DEF:
   case TargetOpcode::KILL:
   case TargetOpcode::DBG_VALUE:
     return 0;
+  // We don't expect expanded PseudoRETs here. Trap if the expanded instructions
+  // appear.
+  case RISCV::JALR: // PseudoRET expansion.
+  case RISCV::C_JR: // PseudoRET expansion.
+    llvm_unreachable(
+        "Unexpected getInstSizeInBytes case (possible PseudoRET expansion");
+  case RISCV::JAL: {
+    // Check for possible J pseudo-instruction expansion.
+    MCRegister Rd = MI.getOperand(0).getReg();
+    if (Rd != RISCV::X0) { // not a J.
+      if (isCompressibleInst(MI, &ST, MRI, STI))
+        return 2;
+      return get(Opcode).getSize();
+    }
+    LLVM_FALLTHROUGH;
+  }
+  case RISCV::C_J: // J pseudo-instruction expansion.
+  case RISCV::PseudoRET: {
+    if (isCompressibleInst(MI, &ST, MRI, STI))
+      return 2 + GuardSize;
+    else
+      return 4 + GuardSize;
+  }
   // These values are determined based on RISCVExpandAtomicPseudoInsts,
   // RISCVExpandPseudoInsts and RISCVMCCodeEmitter, depending on where the
   // pseudos are expanded.
+  case RISCV::PseudoTAIL:
+  case RISCV::PseudoJump:
+    return 8 + GuardSize;
   case RISCV::PseudoCALLReg:
   case RISCV::PseudoCALL:
-  case RISCV::PseudoJump:
-  case RISCV::PseudoTAIL:
   case RISCV::PseudoLLA:
   case RISCV::PseudoLA:
   case RISCV::PseudoLA_TLS_IE:

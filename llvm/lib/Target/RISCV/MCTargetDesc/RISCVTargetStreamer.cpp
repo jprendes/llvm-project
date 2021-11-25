@@ -11,6 +11,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "RISCVTargetStreamer.h"
+#include "RISCVBaseInfo.h"
 #include "RISCVMCTargetDesc.h"
 #include "llvm/Support/FormattedStream.h"
 #include "llvm/Support/RISCVAttributes.h"
@@ -100,6 +101,18 @@ void RISCVTargetStreamer::emitTargetAttributes(const MCSubtargetInfo &STI) {
 RISCVTargetAsmStreamer::RISCVTargetAsmStreamer(MCStreamer &S,
                                                formatted_raw_ostream &OS)
     : RISCVTargetStreamer(S), OS(OS) {}
+
+void RISCVTargetAsmStreamer::prettyPrintAsm(MCInstPrinter &InstPrinter,
+                                            uint64_t Address,
+                                            const MCInst &Inst,
+                                            const MCSubtargetInfo &STI,
+                                            raw_ostream &OS) {
+  MCTargetStreamer::prettyPrintAsm(InstPrinter, Address, Inst, STI, OS);
+  if (STI.hasFeature(RISCV::FeatureGuards) && RISCVFeatures::hasGuard(Inst)) {
+    for (int i = 0; i < RISCVFeatures::NumGuards; i++)
+      OS << "\n\tunimp";
+  }
+}
 
 void RISCVTargetAsmStreamer::emitDirectiveOptionPush() {
   OS << "\t.option\tpush\n";
