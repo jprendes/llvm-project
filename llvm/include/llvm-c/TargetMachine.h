@@ -40,6 +40,7 @@ typedef enum {
     LLVMRelocStatic,
     LLVMRelocPIC,
     LLVMRelocDynamicNoPic,
+    LLVMRelocEPIC,
     LLVMRelocROPI,
     LLVMRelocRWPI,
     LLVMRelocROPI_RWPI
