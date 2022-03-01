@@ -132,28 +132,28 @@ namespace {
 // But function template partial specializations don't exist (needed
 // for base case of the recursion), so we need a dummy struct.
 template <RelExpr... Exprs> struct RelExprMaskBuilder {
-  static inline uint64_t build() { return 0; }
+  static inline __uint128_t build() { return 0; }
 };
 
 // Specialization for recursive case.
 template <RelExpr Head, RelExpr... Tail>
 struct RelExprMaskBuilder<Head, Tail...> {
-  static inline uint64_t build() {
-    static_assert(0 <= Head && Head < 64,
-                  "RelExpr is too large for 64-bit mask!");
-    return (uint64_t(1) << Head) | RelExprMaskBuilder<Tail...>::build();
+  static inline __uint128_t build() {
+    static_assert(0 <= Head && Head < 128,
+                  "RelExpr is too large for 128-bit mask!");
+    return (__uint128_t(1) << Head) | RelExprMaskBuilder<Tail...>::build();
   }
 };
 } // namespace
 
 // Return true if `Expr` is one of `Exprs`.
-// There are fewer than 64 RelExpr's, so we can represent any set of
+// There are fewer than 128 RelExpr's, so we can represent any set of
 // RelExpr's as a constant bit mask and test for membership with a
-// couple cheap bitwise operations.
+// few cheap bitwise operations.
 template <RelExpr... Exprs> bool oneof(RelExpr expr) {
-  assert(0 <= expr && (int)expr < 64 &&
-         "RelExpr is too large for 64-bit mask!");
-  return (uint64_t(1) << expr) & RelExprMaskBuilder<Exprs...>::build();
+  assert(0 <= expr && (int)expr < 128 &&
+         "RelExpr is too large for 128-bit mask!");
+  return (__uint128_t(1) << expr) & RelExprMaskBuilder<Exprs...>::build();
 }
 
 // This function is similar to the `handleTlsRelocation`. MIPS does not

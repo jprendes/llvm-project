@@ -44,7 +44,8 @@ private:
   bool expandMI(MachineBasicBlock &MBB, MachineBasicBlock::iterator MBBI,
                 MachineBasicBlock::iterator &NextMBBI);
   bool expandGpRelAddress(MachineBasicBlock &MBB,
-                          MachineBasicBlock::iterator MBBI);
+                          MachineBasicBlock::iterator MBBI,
+                          MachineBasicBlock::iterator &NextMBBI);
   bool expandAuipcInstPair(MachineBasicBlock &MBB,
                            MachineBasicBlock::iterator MBBI,
                            MachineBasicBlock::iterator &NextMBBI,
@@ -157,26 +158,45 @@ bool RISCVExpandPseudo::expandMI(MachineBasicBlock &MBB,
 }
 
 bool RISCVExpandPseudo::expandGpRelAddress(
-    MachineBasicBlock &MBB, MachineBasicBlock::iterator MBBI) {
+    MachineBasicBlock &MBB, MachineBasicBlock::iterator MBBI,
+    MachineBasicBlock::iterator &NextMBBI) {
   MachineFunction *MF = MBB.getParent();
-  const auto &STI = MF->getSubtarget<RISCVSubtarget>();
-  unsigned LoadInstr = STI.is64Bit() ? RISCV::LD : RISCV::LW;
   MachineInstr &MI = *MBBI;
   DebugLoc DL = MI.getDebugLoc();
 
   Register DestReg = MI.getOperand(0).getReg();
   const MachineOperand &Symbol = MI.getOperand(1);
 
-  BuildMI(MBB, MBBI, DL, TII->get(RISCV::LUI), DestReg)
-      .addDisp(Symbol, 0, RISCVII::MO_GOT_GPREL_HI);
-  BuildMI(MBB, MBBI, DL, TII->get(RISCV::ADD), DestReg)
-      .addReg(RISCV::X3)
-      .addReg(DestReg);
-      //.addDisp(Symbol, 0, RISCVII::MO_GOT_GPREL);
-  BuildMI(MBB, MBBI, DL, TII->get(LoadInstr), DestReg)
-      .addReg(DestReg)
-      .addDisp(Symbol, 0, RISCVII::MO_GOT_GPREL_LO);
+  MachineBasicBlock *NewMBB = MF->CreateMachineBasicBlock(MBB.getBasicBlock());
 
+  // Tell AsmPrinter that we unconditionally want the symbol of this label to be
+  // emitted.
+  NewMBB->setLabelMustBeEmitted();
+
+  MF->insert(++MBB.getIterator(), NewMBB);
+
+  BuildMI(NewMBB, DL, TII->get(RISCV::LUI), DestReg)
+      .addDisp(Symbol, 0, RISCVII::MO_EPIC_HI);
+  BuildMI(NewMBB, DL, TII->get(RISCV::PseudoAddGPRel), DestReg)
+      .addReg(RISCV::X3)
+      .addReg(DestReg)
+      .addDisp(Symbol, 0, RISCVII::MO_EPIC_BASE_ADD);
+  BuildMI(NewMBB, DL, TII->get(RISCV::ADDI), DestReg)
+      .addReg(DestReg)
+      .addMBB(NewMBB, RISCVII::MO_EPIC_LO);
+
+  // Move all the rest of the instructions to NewMBB.
+  NewMBB->splice(NewMBB->end(), &MBB, std::next(MBBI), MBB.end());
+  // Update machine-CFG edges.
+  NewMBB->transferSuccessorsAndUpdatePHIs(&MBB);
+  // Make the original basic block fall-through to the new.
+  MBB.addSuccessor(NewMBB);
+
+  // Make sure live-ins are correctly attached to this new basic block.
+  LivePhysRegs LiveRegs;
+  computeAndAddLiveIns(LiveRegs, *NewMBB);
+
+  NextMBBI = MBB.end();
   MI.eraseFromParent();
   return true;
 }
@@ -238,7 +258,7 @@ bool RISCVExpandPseudo::expandLoadAddress(
   unsigned FlagsHi;
   bool IsEPIC = MF->getTarget().getRelocationModel() == Reloc::EPIC;
   if (IsEPIC)
-    return expandGpRelAddress(MBB, MBBI);
+    return expandGpRelAddress(MBB, MBBI, NextMBBI);
   if (MF->getTarget().isPositionIndependent()) {
     const auto &STI = MF->getSubtarget<RISCVSubtarget>();
     SecondOpcode = STI.is64Bit() ? RISCV::LD : RISCV::LW;

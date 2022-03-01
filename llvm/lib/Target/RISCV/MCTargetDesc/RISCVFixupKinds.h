@@ -38,6 +38,14 @@ enum Fixups {
   // fixup_riscv_got_gprel_lo12_i - 12-bit fixup corresponding to
   // %got_gprel_lo(foo) for instructions like addi
   fixup_riscv_got_gprel_lo12_i,
+  fixup_riscv_gprel_hi20,
+  fixup_riscv_gprel_lo12_i,
+  fixup_riscv_gprel_lo12_s,
+  fixup_riscv_gprel_add,
+  fixup_riscv_epic_hi20,
+  fixup_riscv_epic_lo12_i,
+  fixup_riscv_epic_lo12_s,
+  fixup_riscv_epic_base_add,
   // fixup_riscv_tprel_hi20 - 20-bit fixup corresponding to tprel_hi(foo) for
   // instructions like lui
   fixup_riscv_tprel_hi20,

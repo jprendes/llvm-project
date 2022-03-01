@@ -117,11 +117,17 @@ RISCVMCExpr::VariantKind RISCVMCExpr::getVariantKindForName(StringRef name) {
       .Case("got_pcrel_hi", VK_RISCV_GOT_HI)
       .Case("got_gprel_hi", VK_RISCV_GOT_GPREL_HI)
       .Case("got_gprel_lo", VK_RISCV_GOT_GPREL_LO)
+      .Case("gprel_hi", VK_RISCV_GPREL_HI)
+      .Case("gprel_lo", VK_RISCV_GPREL_LO)
+      .Case("gprel", VK_RISCV_GPREL_ADD)
       .Case("tprel_lo", VK_RISCV_TPREL_LO)
       .Case("tprel_hi", VK_RISCV_TPREL_HI)
       .Case("tprel_add", VK_RISCV_TPREL_ADD)
       .Case("tls_ie_pcrel_hi", VK_RISCV_TLS_GOT_HI)
       .Case("tls_gd_pcrel_hi", VK_RISCV_TLS_GD_HI)
+      .Case("epic_hi", VK_RISCV_EPIC_HI)
+      .Case("epic_lo", VK_RISCV_EPIC_LO)
+      .Case("epic_base_add", VK_RISCV_EPIC_BASE_ADD)
       .Default(VK_RISCV_Invalid);
 }
 
@@ -144,6 +150,12 @@ StringRef RISCVMCExpr::getVariantKindName(VariantKind Kind) {
     return "got_gprel_hi";
   case VK_RISCV_GOT_GPREL_LO:
     return "got_gprel_lo";
+  case VK_RISCV_GPREL_HI:
+    return "gprel_hi";
+  case VK_RISCV_GPREL_LO:
+    return "gprel_lo";
+  case VK_RISCV_GPREL_ADD:
+    return "gprel";
   case VK_RISCV_TPREL_LO:
     return "tprel_lo";
   case VK_RISCV_TPREL_HI:
@@ -160,6 +172,12 @@ StringRef RISCVMCExpr::getVariantKindName(VariantKind Kind) {
     return "call_plt";
   case VK_RISCV_32_PCREL:
     return "32_pcrel";
+  case VK_RISCV_EPIC_HI:
+    return "epic_hi";
+  case VK_RISCV_EPIC_LO:
+    return "epic_lo";
+  case VK_RISCV_EPIC_BASE_ADD:
+    return "epic_base_add";
   }
   llvm_unreachable("Invalid ELF symbol kind");
 }
