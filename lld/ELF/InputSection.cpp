@@ -1022,6 +1022,15 @@ void InputSectionBase::relocateAlloc(uint8_t *buf, uint8_t *bufEnd) {
   const unsigned bits = config->wordsize * 8;
   uint64_t lastPPCRelaxedRelocOff = UINT64_C(-1);
 
+  for (Relocation &rel : relocations) {
+    if (rel.expr == R_EPIC) {
+      uint64_t offset = rel.offset;
+      uint8_t *bufLoc = buf + offset;
+      target->transformEPICRel(bufLoc, rel);
+      assert(rel.expr != R_EPIC);
+    }
+  }
+
   for (const Relocation &rel : relocations) {
     if (rel.expr == R_NONE)
       continue;

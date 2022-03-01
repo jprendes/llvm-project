@@ -981,7 +981,11 @@ RISCVInstrInfo::getSerializableDirectMachineOperandTargetFlags() const {
       {MO_TLS_GOT_HI, "riscv-tls-got-hi"},
       {MO_TLS_GD_HI, "riscv-tls-gd-hi"},
       {MO_GOT_GPREL_HI, "riscv-got-gprel-hi"},
-      {MO_GOT_GPREL_LO, "riscv-got-gprel-lo"}};
+      {MO_GOT_GPREL_LO, "riscv-got-gprel-lo"},
+      {MO_EPIC_HI, "riscv-epic-hi"},
+      {MO_EPIC_LO, "riscv-epic-lo"},
+      {MO_EPIC_BASE_ADD, "riscv-epic-base-add"},
+  };
   return makeArrayRef(TargetFlags);
 }
 bool RISCVInstrInfo::isFunctionSafeToOutlineFrom(

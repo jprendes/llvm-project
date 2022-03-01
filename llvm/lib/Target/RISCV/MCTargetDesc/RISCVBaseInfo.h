@@ -149,11 +149,14 @@ enum {
   MO_TLS_GD_HI = 12,
   MO_GOT_GPREL_HI = 13,
   MO_GOT_GPREL_LO = 14,
+  MO_EPIC_HI = 15,
+  MO_EPIC_LO = 16,
+  MO_EPIC_BASE_ADD = 17,
 
   // Used to differentiate between target-specific "direct" flags and "bitmask"
   // flags. A machine operand can only have one "direct" flag, but can have
   // multiple "bitmask" flags.
-  MO_DIRECT_FLAG_MASK = 15
+  MO_DIRECT_FLAG_MASK = 31
 };
 } // namespace RISCVII
 

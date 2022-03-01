@@ -38,9 +38,10 @@ define i32* @f1() nounwind {
 ;
 ; RV32-EPIC-LABEL: f1:
 ; RV32-EPIC:       # %bb.0: # %entry
-; RV32-EPIC-NEXT:    lui a0, %got_gprel_hi(external_var)
-; RV32-EPIC-NEXT:    add a0, gp, a0
-; RV32-EPIC-NEXT:    lw a0, %got_gprel_lo(external_var)(a0)
+; RV32-EPIC-NEXT:  .LBB0_1: # %entry
+; RV32-EPIC-NEXT:    # Label of block must be emitted
+; RV32-EPIC-NEXT:    lui a0, %epic_hi(external_var)
+; RV32-EPIC-NEXT:    addi a0, a0, %epic_lo(.LBB0_1)
 ; RV32-EPIC-NEXT:    ret
 ;
 ; RV64-STATIC-LABEL: f1:
@@ -59,9 +60,10 @@ define i32* @f1() nounwind {
 ;
 ; RV64-EPIC-LABEL: f1:
 ; RV64-EPIC:       # %bb.0: # %entry
-; RV64-EPIC-NEXT:    lui a0, %got_gprel_hi(external_var)
-; RV64-EPIC-NEXT:    add a0, gp, a0
-; RV64-EPIC-NEXT:    ld a0, %got_gprel_lo(external_var)(a0)
+; RV64-EPIC-NEXT:  .LBB0_1: # %entry
+; RV64-EPIC-NEXT:    # Label of block must be emitted
+; RV64-EPIC-NEXT:    lui a0, %epic_hi(external_var)
+; RV64-EPIC-NEXT:    addi a0, a0, %epic_lo(.LBB0_1)
 ; RV64-EPIC-NEXT:    ret
 entry:
   ret i32* @external_var
@@ -87,9 +89,10 @@ define i32* @f2() nounwind {
 ;
 ; RV32-EPIC-LABEL: f2:
 ; RV32-EPIC:       # %bb.0: # %entry
-; RV32-EPIC-NEXT:    lui a0, %got_gprel_hi(internal_var)
-; RV32-EPIC-NEXT:    add a0, gp, a0
-; RV32-EPIC-NEXT:    lw a0, %got_gprel_lo(internal_var)(a0)
+; RV32-EPIC-NEXT:  .LBB1_1: # %entry
+; RV32-EPIC-NEXT:    # Label of block must be emitted
+; RV32-EPIC-NEXT:    lui a0, %epic_hi(internal_var)
+; RV32-EPIC-NEXT:    addi a0, a0, %epic_lo(.LBB1_1)
 ; RV32-EPIC-NEXT:    ret
 ;
 ; RV64-STATIC-LABEL: f2:
@@ -108,9 +111,10 @@ define i32* @f2() nounwind {
 ;
 ; RV64-EPIC-LABEL: f2:
 ; RV64-EPIC:       # %bb.0: # %entry
-; RV64-EPIC-NEXT:    lui a0, %got_gprel_hi(internal_var)
-; RV64-EPIC-NEXT:    add a0, gp, a0
-; RV64-EPIC-NEXT:    ld a0, %got_gprel_lo(internal_var)(a0)
+; RV64-EPIC-NEXT:  .LBB1_1: # %entry
+; RV64-EPIC-NEXT:    # Label of block must be emitted
+; RV64-EPIC-NEXT:    lui a0, %epic_hi(internal_var)
+; RV64-EPIC-NEXT:    addi a0, a0, %epic_lo(.LBB1_1)
 ; RV64-EPIC-NEXT:    ret
 entry:
   ret i32* @internal_var

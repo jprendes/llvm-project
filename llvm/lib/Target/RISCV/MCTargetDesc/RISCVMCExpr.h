@@ -31,6 +31,9 @@ public:
     VK_RISCV_GOT_HI,
     VK_RISCV_GOT_GPREL_HI,
     VK_RISCV_GOT_GPREL_LO,
+    VK_RISCV_GPREL_HI,
+    VK_RISCV_GPREL_LO,
+    VK_RISCV_GPREL_ADD,
     VK_RISCV_TPREL_LO,
     VK_RISCV_TPREL_HI,
     VK_RISCV_TPREL_ADD,
@@ -39,6 +42,9 @@ public:
     VK_RISCV_CALL,
     VK_RISCV_CALL_PLT,
     VK_RISCV_32_PCREL,
+    VK_RISCV_EPIC_HI,
+    VK_RISCV_EPIC_LO,
+    VK_RISCV_EPIC_BASE_ADD,
     VK_RISCV_Invalid // Must be the last item
   };
 
