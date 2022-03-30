@@ -745,10 +745,13 @@ unsigned RISCVInstrInfo::getInstSizeInBytes(const MachineInstr &MI) const {
   case RISCV::PseudoJump:
   case RISCV::PseudoTAIL:
   case RISCV::PseudoLLA:
-  case RISCV::PseudoLA: // TODO: this might change
   case RISCV::PseudoLA_TLS_IE:
   case RISCV::PseudoLA_TLS_GD:
     return 8;
+  case RISCV::PseudoLA: {
+    const auto &TM = MI.getParent()->getParent()->getTarget();
+    return TM.getRelocationModel() == Reloc::EPIC ? 12 : 8;
+  }
   case RISCV::PseudoAtomicLoadNand32:
   case RISCV::PseudoAtomicLoadNand64:
     return 20;

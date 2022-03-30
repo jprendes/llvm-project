@@ -569,6 +569,8 @@ defm lto_whole_program_visibility: BB<"lto-whole-program-visibility",
   "Asserts that the LTO link does not have whole program visibility">;
 def lto_pseudo_probe_for_profiling: F<"lto-pseudo-probe-for-profiling">,
   HelpText<"Emit pseudo probes for sample profiling">;
+def lto_epic: FF<"lto-epic">,
+  HelpText<"Emit code suitable for the ePIC ABI during LTO">;
 def disable_verify: F<"disable-verify">;
 defm mllvm: Eq<"mllvm", "Additional arguments to forward to LLVM's option processing">;
 def opt_remarks_filename: Separate<["--"], "opt-remarks-filename">,
